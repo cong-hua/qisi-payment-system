@@ -1,0 +1,25 @@
+# Zeabur环境变量配置示例
+# 请在Zeabur项目设置中配置以下环境变量
+
+NODE_ENV=production
+SERVER_PORT=3000
+
+# MongoDB数据库连接
+# 请使用您的实际连接字符串替换
+MONGODB_URI=mongodb+srv://congluo19_db_user:7xlhPXM6WWhH29yH@cluster0.nungpf1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+# 支付宝正式环境配置
+ALIPAY_APP_ID=2021005182641746
+ALIPAY_SERVER_URL=https://openapi.alipay.com/gateway.do
+ALIPAY_NOTIFY_URL=https://qisi.shop/api/payment/alipay/notify
+ALIPAY_RETURN_URL=https://qisi.shop/payment/success
+
+# 支付宝RSA密钥（需要在Zeabur中配置完整密钥）
+# ALIPAY_PRIVATE_KEY=-----BEGIN RSA PRIVATE KEY-----[您的私钥]-----END RSA PRIVATE KEY-----
+# ALIPAY_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----[您的公钥]-----END PUBLIC KEY-----
+
+# CORS域名配置
+CORS_ORIGIN=https://qisi.shop
+
+# 积分兑换比例
+POINTS_EXCHANGE_RATE=100

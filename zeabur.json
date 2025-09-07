@@ -1,0 +1,13 @@
+{
+  "build": {
+    "commands": ["npm ci"]
+  },
+  "start": {
+    "command": "node real-server.js"
+  },
+  "healthz": "/healthz",
+  "port": 3000,
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
