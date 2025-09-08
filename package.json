@@ -7,7 +7,7 @@
     "start": "node real-server.js",
     "start:prod": "NODE_ENV=production node real-server.js",
     "start:dev": "nodemon real-server.js",
-    "healthcheck": "curl -f http://localhost:3000/healthz || exit 1"
+    "healthcheck": "curl -f http://localhost:8080/healthz || exit 1"
   },
   "engines": {
     "node": "18"

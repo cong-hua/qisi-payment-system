@@ -6,8 +6,9 @@
     "command": "node real-server.js"
   },
   "healthz": "/healthz",
-  "port": 3000,
+  "port": 8080,
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "PORT": "8080"
   }
 }

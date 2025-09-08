@@ -13,7 +13,7 @@ const Order = require('./models/Order');
 const PointsLog = require('./models/PointsLog');
 
 const app = express();
-const PORT = process.env.SERVER_PORT || 3000;
+const PORT = Number(process.env.PORT || process.env.SERVER_PORT || 8080);
 
 // 安全中间件
 app.use(helmet({
@@ -87,6 +87,29 @@ app.get('/healthz', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
+      error: error.message
+    });
+  }
+});
+
+// IP检测端点 - 用于获取Zeabur的出站IP
+app.get('/check-ip', async (req, res) => {
+  try {
+    const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    const forwarded = req.headers['x-forwarded-for'];
+    
+    res.json({
+      clientIp,
+      forwarded,
+      headers: {
+        'x-forwarded-for': req.headers['x-forwarded-for'],
+        'x-real-ip': req.headers['x-real-ip'],
+        'host': req.headers['host']
+      },
+      message: '请在MongoDB Atlas Network Access中添加此IP到白名单'
+    });
+  } catch (error) {
+    res.status(500).json({
       error: error.message
     });
   }
@@ -365,23 +388,27 @@ app.use('*', (req, res) => {
 // 启动服务器
 async function startServer() {
   try {
-    // 连接数据库
-    await connectDB();
+    // 尝试连接数据库，但不阻塞启动
+    await connectDB().catch(err => {
+      console.error('⚠️  数据库连接失败，服务器继续启动:', err.message);
+    });
     
     // 初始化支付宝SDK
     initAlipaySDK();
     
     // 启动HTTP服务器
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 生产环境服务器启动成功!`);
-      console.log(`🌐 服务器地址: http://127.0.0.1:${PORT}`);
-      console.log(`🔧 健康检查: http://127.0.0.1:${PORT}/healthz`);
+      console.log(`🌐 服务器地址: http://0.0.0.0:${PORT}`);
+      console.log(`🔧 健康检查: http://0.0.0.0:${PORT}/healthz`);
+      console.log(`🔍 IP检测: http://0.0.0.0:${PORT}/check-ip`);
       console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
       console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
     });
   } catch (error) {
     console.error('❌ 服务器启动失败:', error);
-    process.exit(1);
+    // 不退出进程，让容器继续运行
+    // process.exit(1);
   }
 }
 
