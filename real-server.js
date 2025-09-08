@@ -7,10 +7,10 @@ const AlipaySdk = require('alipay-sdk').default;
 require('dotenv').config();
 
 // 数据库和模型
-const { connectDB, dbStatus } = require('./config/database');
-const User = require('./models/User');
-const Order = require('./models/Order');
-const PointsLog = require('./models/PointsLog');
+const { connectDB, dbStatus } = require('./database');
+const User = require('./User');
+const Order = require('./Order');
+const PointsLog = require('./PointsLog');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000;
@@ -397,4 +397,5 @@ process.on('SIGINT', () => {
 });
 
 // 启动应用
+
 startServer();
