@@ -92,24 +92,25 @@ app.get('/healthz', async (req, res) => {
   }
 });
 
-// 临时：检测Zeabur出口IP地址
+// IP检测端点 - 用于获取Zeabur的出站IP
 app.get('/check-ip', async (req, res) => {
   try {
-    const axios = require('axios');
-    const response = await axios.get('https://ipinfo.io/json', { timeout: 10000 });
+    const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    const forwarded = req.headers['x-forwarded-for'];
+    
     res.json({
-      success: true,
-      outboundIP: response.data.ip,
-      location: `${response.data.city}, ${response.data.country}`,
-      region: response.data.region,
-      org: response.data.org,
-      note: 'This is the IP that Zeabur uses to connect to external services like MongoDB'
+      clientIp,
+      forwarded,
+      headers: {
+        'x-forwarded-for': req.headers['x-forwarded-for'],
+        'x-real-ip': req.headers['x-real-ip'],
+        'host': req.headers['host']
+      },
+      message: '请在MongoDB Atlas Network Access中添加此IP到白名单'
     });
   } catch (error) {
-    res.json({ 
-      success: false,
-      error: 'Failed to detect outbound IP',
-      details: error.message
+    res.status(500).json({
+      error: error.message
     });
   }
 });
@@ -354,7 +355,7 @@ app.get('/api/orders/history', async (req, res) => {
       .limit(50)
       .select('orderId amount points status alipayTradeNo createdAt');
 
-  res.json({
+    res.json({
       success: true,
       orders
     });
@@ -384,27 +385,30 @@ app.use('*', (req, res) => {
   });
 });
 
-// 启动服务器（优化：DB失败不中止进程）
+// 启动服务器
 async function startServer() {
-  // 连接数据库
   try {
-    await connectDB();
-    console.log('✅ 数据库连接成功');
+    // 尝试连接数据库，但不阻塞启动
+    await connectDB().catch(err => {
+      console.error('⚠️  数据库连接失败，服务器继续启动:', err.message);
+    });
+    
+    // 初始化支付宝SDK
+    initAlipaySDK();
+    
+    // 启动HTTP服务器
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 生产环境服务器启动成功!`);
+      console.log(`🌐 服务器地址: http://0.0.0.0:${PORT}`);
+      console.log(`🔧 健康检查: http://0.0.0.0:${PORT}/healthz`);
+      console.log(`🔍 IP检测: http://0.0.0.0:${PORT}/check-ip`);
+      console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
+      console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
+    });
   } catch (error) {
-    console.error('❌ 数据库连接失败，服务将在无数据库模式下启动:', error.message);
+    console.error('❌ 服务器启动失败:', error);
+    process.exit(1);
   }
-  
-  // 初始化支付宝SDK
-  initAlipaySDK();
-  
-  // 启动HTTP服务器（显式绑定 0.0.0.0）
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 生产环境服务器启动成功!`);
-    console.log(`🌐 服务器地址: http://0.0.0.0:${PORT}`);
-    console.log(`🔧 健康检查: http://0.0.0.0:${PORT}/healthz`);
-    console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
-    console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
-  });
 }
 
 // 优雅关闭
