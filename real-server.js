@@ -92,6 +92,28 @@ app.get('/healthz', async (req, res) => {
   }
 });
 
+// 临时：检测Zeabur出口IP地址
+app.get('/check-ip', async (req, res) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.get('https://ipinfo.io/json', { timeout: 10000 });
+    res.json({
+      success: true,
+      outboundIP: response.data.ip,
+      location: `${response.data.city}, ${response.data.country}`,
+      region: response.data.region,
+      org: response.data.org,
+      note: 'This is the IP that Zeabur uses to connect to external services like MongoDB'
+    });
+  } catch (error) {
+    res.json({ 
+      success: false,
+      error: 'Failed to detect outbound IP',
+      details: error.message
+    });
+  }
+});
+
 // 获取或创建默认用户(生产环境应该有用户注册系统)
 async function getDefaultUser() {
   let user = await User.findOne({ username: 'defaultUser' });
@@ -399,3 +421,4 @@ process.on('SIGINT', () => {
 // 启动应用
 
 startServer();
+
