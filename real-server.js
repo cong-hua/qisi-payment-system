@@ -7,10 +7,10 @@ const AlipaySdk = require('alipay-sdk').default;
 require('dotenv').config();
 
 // 数据库和模型
-const { connectDB, dbStatus } = require('./database');
-const User = require('./User');
-const Order = require('./Order');
-const PointsLog = require('./PointsLog');
+const { connectDB, dbStatus } = require('./config/database');
+const User = require('./models/User');
+const Order = require('./models/Order');
+const PointsLog = require('./models/PointsLog');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000;
@@ -87,29 +87,6 @@ app.get('/healthz', async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      error: error.message
-    });
-  }
-});
-
-// IP检测端点 - 用于获取Zeabur的出站IP
-app.get('/check-ip', async (req, res) => {
-  try {
-    const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
-    const forwarded = req.headers['x-forwarded-for'];
-    
-    res.json({
-      clientIp,
-      forwarded,
-      headers: {
-        'x-forwarded-for': req.headers['x-forwarded-for'],
-        'x-real-ip': req.headers['x-real-ip'],
-        'host': req.headers['host']
-      },
-      message: '请在MongoDB Atlas Network Access中添加此IP到白名单'
-    });
-  } catch (error) {
-    res.status(500).json({
       error: error.message
     });
   }
@@ -388,20 +365,17 @@ app.use('*', (req, res) => {
 // 启动服务器
 async function startServer() {
   try {
-    // 尝试连接数据库，但不阻塞启动
-    await connectDB().catch(err => {
-      console.error('⚠️  数据库连接失败，服务器继续启动:', err.message);
-    });
+    // 连接数据库
+    await connectDB();
     
     // 初始化支付宝SDK
     initAlipaySDK();
     
     // 启动HTTP服务器
-    app.listen(PORT, '0.0.0.0', () => {
+    app.listen(PORT, () => {
       console.log(`🚀 生产环境服务器启动成功!`);
-      console.log(`🌐 服务器地址: http://0.0.0.0:${PORT}`);
-      console.log(`🔧 健康检查: http://0.0.0.0:${PORT}/healthz`);
-      console.log(`🔍 IP检测: http://0.0.0.0:${PORT}/check-ip`);
+      console.log(`🌐 服务器地址: http://127.0.0.1:${PORT}`);
+      console.log(`🔧 健康检查: http://127.0.0.1:${PORT}/healthz`);
       console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
       console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
     });
