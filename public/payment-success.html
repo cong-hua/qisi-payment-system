@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付成功 - 小红书发布助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 40px 30px;
+        }
+        
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .order-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .order-info h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+            border-top: 1px solid #e1e5e9;
+            padding-top: 15px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .tips {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .tips h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .tips ul {
+            text-align: left;
+            color: #666;
+        }
+        
+        .tips li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>支付成功！</h1>
+            <p>感谢您的购买，积分已到账</p>
+        </div>
+        
+        <div class="content">
+            <div class="order-info">
+                <h3>订单信息</h3>
+                <div class="info-row">
+                    <span>套餐类型：</span>
+                    <span id="planName">标准套餐</span>
+                </div>
+                <div class="info-row">
+                    <span>获得积分：</span>
+                    <span id="planPoints">500积分</span>
+                </div>
+                <div class="info-row">
+                    <span>支付金额：</span>
+                    <span id="planPrice">¥29.9</span>
+                </div>
+                <div class="info-row">
+                    <span>支付方式：</span>
+                    <span id="paymentMethod">支付宝</span>
+                </div>
+                <div class="info-row">
+                    <span>支付时间：</span>
+                    <span id="paymentTime">2025-09-03 13:30:00</span>
+                </div>
+            </div>
+            
+            <a href="index.html" class="btn">返回用户中心</a>
+            <a href="subscription.html" class="btn btn-secondary">继续充值</a>
+            
+            <div class="tips">
+                <h4>使用提示</h4>
+                <ul>
+                    <li>积分已自动添加到您的账户</li>
+                    <li>您可以在用户中心查看当前积分余额</li>
+                    <li>下载并安装Chrome插件开始使用</li>
+                    <li>如有问题请联系客服</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从URL参数获取订单信息（如果有的话）
+        const urlParams = new URLSearchParams(window.location.search);
+        const planName = urlParams.get('plan') || '标准套餐';
+        const planPoints = urlParams.get('points') || '500积分';
+        const planPrice = urlParams.get('price') || '¥29.9';
+        const paymentMethod = urlParams.get('payment') || '支付宝';
+        
+        // 更新页面显示
+        document.getElementById('planName').textContent = planName;
+        document.getElementById('planPoints').textContent = planPoints + '积分';
+        document.getElementById('planPrice').textContent = planPrice;
+        document.getElementById('paymentMethod').textContent = paymentMethod === 'alipay' ? '支付宝' : '微信支付';
+        document.getElementById('paymentTime').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>
+
+
+
+
+

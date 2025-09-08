@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制台 - 小红书发布助手</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <link rel="stylesheet" href="/css/admin-dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 顶部导航栏 -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🔧</span>
+                    <h1>小红书发布助手</h1>
+                    <span class="subtitle">管理员控制台</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="update-indicator">
+                    <span class="update-dot"></span>
+                    <span id="updateTimer">自动更新: 30s</span>
+                </div>
+                <div class="admin-info">
+                    <span id="adminName">admin</span>
+                    <button id="logoutBtn" class="logout-btn">登出</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab 导航 -->
+        <nav class="dashboard-nav">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="overview">📊 总览</button>
+                <button class="nav-tab" data-tab="users">👥 用户管理</button>
+                <button class="nav-tab" data-tab="geography">🌍 地理分布</button>
+                <button class="nav-tab" data-tab="devices">📱 设备统计</button>
+                <button class="nav-tab" data-tab="security">🛡️ 安全监控</button>
+            </div>
+        </nav>
+
+        <!-- 主内容区域 -->
+        <main class="dashboard-main">
+            <!-- 总览 Tab -->
+            <div id="overview-tab" class="tab-content active">
+                <!-- 实时数据面板 -->
+                <section class="stats-panel">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalUsers">0</div>
+                                <div class="stat-label">总用户数</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="activeUsers">0</div>
+                                <div class="stat-label">活跃用户</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalPoints">0</div>
+                                <div class="stat-label">总积分</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔑</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="todayLogins">0</div>
+                                <div class="stat-label">今日登录</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="todayRegistrations">0</div>
+                                <div class="stat-label">今日注册</div>
+                            </div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-icon">❌</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="failedLogins">0</div>
+                                <div class="stat-label">登录失败</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 图表区域 -->
+                <section class="charts-section">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>📈 用户增长趋势</h3>
+                                <select id="userGrowthPeriod">
+                                    <option value="7">最近7天</option>
+                                    <option value="30">最近30天</option>
+                                    <option value="90">最近90天</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="userGrowthChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>🌍 地理分布</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="locationChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>📱 设备类型统计</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="deviceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>🌐 浏览器分布</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="browserChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 最近活动 -->
+                <section class="recent-activity">
+                    <div class="activity-header">
+                        <h3>📋 最近活动</h3>
+                        <button id="refreshActivity" class="refresh-btn">🔄 刷新</button>
+                    </div>
+                    <div class="activity-list" id="recentActivity">
+                        <!-- 动态加载活动列表 -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- 用户管理 Tab -->
+            <div id="users-tab" class="tab-content">
+                <section class="user-management">
+                    <div class="user-controls">
+                        <div class="search-container">
+                            <input type="text" id="userSearch" placeholder="🔍 搜索用户名、邮箱、地区..." class="search-input">
+                            <button id="searchBtn" class="search-btn">搜索</button>
+                        </div>
+                        <div class="filter-controls">
+                            <select id="statusFilter">
+                                <option value="">全部状态</option>
+                                <option value="active">活跃</option>
+                                <option value="disabled">已禁用</option>
+                            </select>
+                            <select id="sortBy">
+                                <option value="created_at">注册时间</option>
+                                <option value="last_login_time">最后登录</option>
+                                <option value="points">积分</option>
+                                <option value="login_count">登录次数</option>
+                            </select>
+                            <select id="sortOrder">
+                                <option value="DESC">降序</option>
+                                <option value="ASC">升序</option>
+                            </select>
+                            <button id="exportUsers" class="export-btn">📥 导出</button>
+                        </div>
+                    </div>
+
+                    <div class="user-table-container">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>积分</th>
+                                    <th>状态</th>
+                                    <th>IP地址</th>
+                                    <th>位置</th>
+                                    <th>设备</th>
+                                    <th>最后登录</th>
+                                    <th>登录次数</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <!-- 动态加载用户数据 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">显示 0 - 0 条，共 0 条记录</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="prevPage" class="pagination-btn">« 上一页</button>
+                            <div class="page-numbers" id="pageNumbers"></div>
+                            <button id="nextPage" class="pagination-btn">下一页 »</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 地理分布 Tab -->
+            <div id="geography-tab" class="tab-content">
+                <section class="geography-section">
+                    <div class="geo-charts-grid">
+                        <div class="geo-chart-card">
+                            <h3>🌏 国家分布</h3>
+                            <canvas id="countryChart"></canvas>
+                        </div>
+                        <div class="geo-chart-card">
+                            <h3>🏙️ 城市分布</h3>
+                            <canvas id="cityChart"></canvas>
+                        </div>
+                        <div class="geo-stats">
+                            <h3>📍 地理位置统计</h3>
+                            <div id="geoStats">
+                                <!-- 动态加载地理统计数据 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 设备统计 Tab -->
+            <div id="devices-tab" class="tab-content">
+                <section class="device-section">
+                    <div class="device-charts-grid">
+                        <div class="device-chart-card">
+                            <h3>💻 操作系统</h3>
+                            <canvas id="osChart"></canvas>
+                        </div>
+                        <div class="device-chart-card">
+                            <h3>📱 设备类型</h3>
+                            <canvas id="deviceTypeChart"></canvas>
+                        </div>
+                        <div class="device-chart-card">
+                            <h3>📺 屏幕分辨率</h3>
+                            <canvas id="resolutionChart"></canvas>
+                        </div>
+                        <div class="device-stats">
+                            <h3>📊 设备统计详情</h3>
+                            <div id="deviceStats">
+                                <!-- 动态加载设备统计数据 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 安全监控 Tab -->
+            <div id="security-tab" class="tab-content">
+                <section class="security-section">
+                    <div class="security-alerts">
+                        <h3>🚨 安全警报</h3>
+                        <div id="securityAlerts">
+                            <!-- 动态加载安全警报 -->
+                        </div>
+                    </div>
+                    <div class="login-history">
+                        <h3>📋 登录历史</h3>
+                        <div class="login-filters">
+                            <input type="date" id="dateFrom" class="date-input">
+                            <input type="date" id="dateTo" class="date-input">
+                            <button id="filterLoginHistory" class="filter-btn">筛选</button>
+                        </div>
+                        <div class="login-history-table">
+                            <div id="loginHistoryContent">
+                                <!-- 动态加载登录历史 -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 用户详情模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">用户详情</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="user-detail-tabs">
+                    <button class="detail-tab active" data-detail="basic">基本信息</button>
+                    <button class="detail-tab" data-detail="device">设备信息</button>
+                    <button class="detail-tab" data-detail="history">登录历史</button>
+                    <button class="detail-tab" data-detail="points">积分记录</button>
+                </div>
+                <div class="user-detail-content">
+                    <div id="basic-detail" class="detail-content active">
+                        <!-- 基本信息内容 -->
+                    </div>
+                    <div id="device-detail" class="detail-content">
+                        <!-- 设备信息内容 -->
+                    </div>
+                    <div id="history-detail" class="detail-content">
+                        <!-- 登录历史内容 -->
+                    </div>
+                    <div id="points-detail" class="detail-content">
+                        <!-- 积分记录内容 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="editPointsBtn" class="btn btn-primary">修改积分</button>
+                <button id="resetPasswordBtn" class="btn btn-warning">重置密码</button>
+                <button id="toggleStatusBtn" class="btn btn-danger">禁用用户</button>
+                <button class="btn btn-secondary close-modal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 积分修改模态框 -->
+    <div id="pointsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>修改用户积分</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="pointsForm">
+                    <div class="form-group">
+                        <label>用户: <span id="pointsUserName"></span></label>
+                        <label>当前积分: <span id="currentPoints"></span></label>
+                    </div>
+                    <div class="form-group">
+                        <label for="pointsAction">操作类型:</label>
+                        <select id="pointsAction" required>
+                            <option value="set">设置为</option>
+                            <option value="add">增加</option>
+                            <option value="subtract">减少</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pointsAmount">积分数量:</label>
+                        <input type="number" id="pointsAmount" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pointsReason">操作原因:</label>
+                        <input type="text" id="pointsReason" placeholder="请输入操作原因...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="pointsForm" class="btn btn-primary">确认修改</button>
+                <button class="btn btn-secondary close-modal">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- 加载中遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <script src="/js/admin-dashboard.js"></script>
+</body>
+</html>
+
+
+
+
