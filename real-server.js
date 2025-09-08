@@ -354,7 +354,7 @@ app.get('/api/orders/history', async (req, res) => {
       .limit(50)
       .select('orderId amount points status alipayTradeNo createdAt');
 
-    res.json({
+  res.json({
       success: true,
       orders
     });
@@ -384,27 +384,27 @@ app.use('*', (req, res) => {
   });
 });
 
-// 启动服务器
+// 启动服务器（优化：DB失败不中止进程）
 async function startServer() {
+  // 连接数据库
   try {
-    // 连接数据库
     await connectDB();
-    
-    // 初始化支付宝SDK
-    initAlipaySDK();
-    
-    // 启动HTTP服务器
-    app.listen(PORT, () => {
-      console.log(`🚀 生产环境服务器启动成功!`);
-      console.log(`🌐 服务器地址: http://127.0.0.1:${PORT}`);
-      console.log(`🔧 健康检查: http://127.0.0.1:${PORT}/healthz`);
-      console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
-      console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
-    });
+    console.log('✅ 数据库连接成功');
   } catch (error) {
-    console.error('❌ 服务器启动失败:', error);
-    process.exit(1);
+    console.error('❌ 数据库连接失败，服务将在无数据库模式下启动:', error.message);
   }
+  
+  // 初始化支付宝SDK
+  initAlipaySDK();
+  
+  // 启动HTTP服务器（显式绑定 0.0.0.0）
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 生产环境服务器启动成功!`);
+    console.log(`🌐 服务器地址: http://0.0.0.0:${PORT}`);
+    console.log(`🔧 健康检查: http://0.0.0.0:${PORT}/healthz`);
+    console.log(`💳 支付服务: ${alipaySDK ? '就绪' : '未配置'}`);
+    console.log(`🗄️  数据库: ${dbStatus().connected ? '已连接' : '未连接'}`);
+  });
 }
 
 // 优雅关闭
@@ -419,6 +419,4 @@ process.on('SIGINT', () => {
 });
 
 // 启动应用
-
 startServer();
-
